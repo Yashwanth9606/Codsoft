@@ -1,0 +1,54 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class NumberGuessingGame {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int totalRounds = 3;
+        int maxAttempts = 5;
+        int score = 0;
+
+        for (int round = 1; round <= totalRounds; round++) {
+            System.out.println("\nRound " + round);
+            Random rand = new Random();
+            int randomNumber = rand.nextInt(100) + 1;
+            int attempts = 0;
+            boolean roundWon = false;
+
+            while (attempts < maxAttempts) {
+                System.out.print("Attempt " + (attempts + 1) + "/" + maxAttempts + " - Guess the number (1 to 100): ");
+                
+                try {
+                    int guess = Integer.parseInt(scanner.nextLine());
+                    
+                    if (guess < 1 || guess > 100) {
+                        System.out.println("Please enter a number between 1 and 100.");
+                        continue;
+                    }
+                    
+                    attempts++;
+                    
+                    if (guess < randomNumber) {
+                        System.out.println("Too low!");
+                    } else if (guess > randomNumber) {
+                        System.out.println("Too high!");
+                    } else {
+                        System.out.println("Correct! You've guessed the number.");
+                        score++;
+                        roundWon = true;
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Please enter a valid number.");
+                }
+            }
+            
+            if (!roundWon) {
+                System.out.println("Out of attempts! The correct number was: " + randomNumber);
+            }
+        }
+        
+        System.out.println("\nGame over! Your score: " + score + "/" + totalRounds);
+        scanner.close();
+    }
+}
