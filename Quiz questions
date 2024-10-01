@@ -1,0 +1,135 @@
+
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+// Class representing a single quiz question
+class QuizQuestion {
+    private String question;
+    private String[] options;
+    private int correctAnswer;
+
+    // Constructor to initialize the question, options, and correct answer
+    public QuizQuestion(String question, String[] options, int correctAnswer) {
+        this.question = question;
+        this.options = options;
+        this.correctAnswer = correctAnswer;
+    }
+
+    // Method to display the question and options
+    public void displayQuestion() {
+        System.out.println(question);
+        for (int i = 0; i < options.length; i++) {
+            System.out.println((i + 1) + ". " + options[i]);
+        }
+    }
+
+    // Method to check if the answer is correct
+    public boolean checkAnswer(int answer) {
+        return answer == correctAnswer;
+    }
+}
+
+// Class representing the Quiz with timer and score tracking
+class QuizApp {
+    private QuizQuestion[] questions;
+    private int score;
+    private int totalQuestions;
+    private int timePerQuestion = 10; // Time limit for each question in seconds
+    private Timer timer;
+    private AtomicBoolean timeUp;
+
+    // Constructor to initialize the quiz with a set of questions
+    public QuizApp(QuizQuestion[] questions) {
+        this.questions = questions;
+        this.totalQuestions = questions.length;
+        this.score = 0;
+        this.timeUp = new AtomicBoolean(false);
+    }
+
+    // Method to start the quiz
+    public void startQuiz() {
+        Scanner scanner = new Scanner(System.in);
+
+        for (int i = 0; i < totalQuestions; i++) {
+            QuizQuestion currentQuestion = questions[i];
+            currentQuestion.displayQuestion();
+            startTimer();
+
+            int userAnswer = -1;
+            while (true) {
+                if (timeUp.get()) {
+                    System.out.println("Time's up!");
+                    break;
+                }
+
+                if (scanner.hasNextInt()) {
+                    userAnswer = scanner.nextInt();
+                    if (userAnswer < 1 || userAnswer > 4) {
+                        System.out.println("Please enter a valid option (1-4): ");
+                    } else {
+                        break;
+                    }
+                } else {
+                    System.out.println("Please enter a valid option (1-4): ");
+                    scanner.next(); // clear invalid input
+                }
+            }
+
+            stopTimer();
+
+            if (!timeUp.get() && currentQuestion.checkAnswer(userAnswer)) {
+                System.out.println("Correct!");
+                score++;
+            } else if (!timeUp.get()) {
+                System.out.println("Incorrect!");
+            }
+        }
+
+        displayResults();
+        scanner.close();
+    }
+
+    // Method to start the timer for each question
+    private void startTimer() {
+        timeUp.set(false);
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                timeUp.set(true);
+            }
+        }, timePerQuestion * 1000);
+    }
+
+    // Method to stop the timer
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }
+    }
+
+    // Method to display the final results
+    private void displayResults() {
+        System.out.println("\nQuiz Over!");
+        System.out.println("Your Score: " + score + "/" + totalQuestions);
+    }
+}
+
+// Main class to run the quiz application
+public class QuizApplication {
+    public static void main(String[] args) {
+        // Define quiz questions
+        QuizQuestion[] questions = new QuizQuestion[]{
+            new QuizQuestion("What is the capital of France?", new String[]{"Paris", "London", "Berlin", "Madrid"}, 1),
+            new QuizQuestion("Which planet is known as the Red Planet?", new String[]{"Earth", "Mars", "Venus", "Jupiter"}, 2),
+            new QuizQuestion("What is the largest ocean on Earth?", new String[]{"Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"}, 4),
+            new QuizQuestion("Who wrote 'Romeo and Juliet'?", new String[]{"Charles Dickens", "William Shakespeare", "Mark Twain", "J.K. Rowling"}, 2)
+        };
+
+        // Create and start the quiz
+        QuizApp quiz = new QuizApp(questions);
+        quiz.startQuiz();
+    }
+}
